@@ -10,6 +10,20 @@ import UIKit
 class MemoryViewController: UIViewController {
     
     @IBOutlet var textView: UITextView!
+    
+    let visibleText: [NSAttributedString.Key: Any] = [
+        .font: UIFont(name: "Georgia", size: 28)!,
+        .foregroundColor: UIColor.black
+    ]
+    
+    let invisibleText: [NSAttributedString.Key: Any] = [
+        .font: UIFont(name: "Georgia", size: 28)!,
+        .foregroundColor: UIColor.clear,
+        .strikethroughStyle: 1,
+        .strikethroughColor: UIColor.black,
+        
+    ]
+    
     var blankCounter = 0
     var item: MemoryItem!
     
@@ -26,18 +40,37 @@ class MemoryViewController: UIViewController {
     
     func showText() {
         let words = item.text.components(separatedBy: " ")
-        var output = " "
+        let output = NSMutableAttributedString()
+        
+        let space = NSAttributedString(string: " ", attributes: visibleText)
         
         for (index, word) in words.enumerated() {
             if index < blankCounter {
-                output += "\(word) "
+                // this word should be visible
+                
+                let attributedWord = NSAttributedString(string: "\(word)", attributes: visibleText)
+                output.append(attributedWord)
             } else {
-                let blank = String(repeating: "_", count: word.count)
-                output.append("\(blank) ")
+                // this word should be invisible
+                var strippedWord = word
+                var punctuation: String?
+                
+                if ".,".contains(word.last!) {
+                    punctuation = String(strippedWord.removeLast())
+                }
+                
+                let attributedWord = NSAttributedString(string: "\(strippedWord)", attributes: invisibleText)
+                
+                if let symbol = punctuation {
+                    let attributedPunctuation = NSAttributedString(string: symbol, attributes: visibleText)
+                    output.append(attributedPunctuation)
+                }
+                output.append(attributedWord)
             }
+            output.append(space)
         }
         
-        textView.text = output
+        textView.attributedText = output
     }
     
     @objc func wordsTapped() {
